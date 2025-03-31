@@ -1,0 +1,64 @@
+import tkinter as tk
+from tkinter import scrolledtext
+import arabic_reshaper
+from bidi.algorithm import get_display
+
+# دیتابیس سؤالات و پاسخ‌ها
+knowledge_base = {
+    "ارزش غذايي زيتون": "زيتون داراي چربي هاي سالم،ويتامينE،آهن و آنتي اکسيدان ها است.",
+    "کالري زيتون": "هر 100 پرم زيتون بين 115 تا 145 کالري دارد.",
+    "چربي زيتون": "زيتون 10 تا 15 درصد چربي دارد که بيشتر آن اسيداولئيک است.",
+    "پروتئین زیتون": "میزان پروتئین زیتون کمتر از 1 درصد است.",
+    "فیبر زیتون": "زیتون حدود 4 درصد فیبر دارد که به گوارش کمک می کند.",
+    "پتاسیم زیتون": "زیتون دارای پتاسیم است که برای سلامت قلب مفید می باشد.",
+    "آهن زیتون": "زیتون حاوی آهن است که برای تولید هموگلوبین ضروری است.",
+    "ارزش غذایی خرما": "خرما منبع غنی از کربوهیدرات، فیبر و آنتی اکسیدان ها است.",
+    "کالری خرما": "هر 100 گرم خرما تقریبا 277 کالری دارد.",
+    "چربی خرما": "خرما تقریبا بدون چربی است و کمتر از 0.2 درصد چربی دارد.",
+    "پروتئین خرما": "هر 100 گرم خرما حدود 2 درصد پروتئین دارد.",
+    "فیبر خرما": "خرما دارای 7 گرم فیبر در در هر 100 گرم است که برای سلامت روده مفید است.",
+    "قند خرما": "خرما حاوی قند طبیعی مانند گلوکز و فروکتوز است که انرژی فوری فراهم می کنند.",
+    "پتاسیم خرما": "خرما دارای پتاسیم بالایی است که به سلامت قلب و کاهش فشار خون کمک می کند.",
+    "ویتامین خرما": "ویتامین های خرما: K, B, C"
+}
+
+class ChatBotApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("چت‌بات")
+        self.root.geometry("500x600")
+        
+        self.chat_history = scrolledtext.ScrolledText(root, wrap=tk.WORD, font=("Arial", 12), right=1)
+        self.chat_history.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
+        self.chat_history.insert(tk.END, "چت‌بات: سلام! در مورد ارزش غذایی خرما و زیتون بپرس.\n")
+        self.chat_history.configure(state='disabled')
+        
+        self.user_input = tk.Entry(root, font=("Arial", 12), justify='right')
+        self.user_input.pack(padx=10, pady=5, fill=tk.X)
+        
+        self.send_button = tk.Button(root, text="ارسال", command=self.send_message, font=("Arial", 12))
+        self.send_button.pack(pady=5)
+        
+        self.user_input.bind("<Return>", lambda event: self.send_message())
+    
+    def send_message(self):
+        user_text = self.user_input.get().strip()
+        if user_text:
+            reshaped_text = arabic_reshaper.reshape(user_text)
+            bidi_text = get_display(reshaped_text)
+            
+            bot_response = knowledge_base.get(user_text, "متاسفم! اطلاعاتی در این مورد ندارم.")
+            reshaped_response = arabic_reshaper.reshape(bot_response)
+            bidi_response = get_display(reshaped_response)
+            
+            self.chat_history.configure(state='normal')
+            self.chat_history.insert(tk.END, f"\nشما: {bidi_text}\nچت‌بات: {bidi_response}\n")
+            self.chat_history.configure(state='disabled')
+            self.chat_history.yview(tk.END)
+            
+            self.user_input.delete(0, tk.END)
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = ChatBotApp(root)
+    root.mainloop()
